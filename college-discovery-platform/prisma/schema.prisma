@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+
+  savedColleges SavedCollege[]
+
+  createdAt DateTime @default(now())
+}
+
+enum CollegeType {
+  IIT
+  NIT
+  IIIT
+  Medical
+  Law
+  Private
+  University
+}
+
+model College {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  city        String
+  type        CollegeType // Enforces one of the specific types allowed above
+  fees        Int         
+  rating      Float       
+  placements  Int         
+  description String      @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  savedBy SavedCollege[]
+}
+
+model SavedCollege {
+  id        String @id @default(cuid())
+
+  userId    String
+  collegeId String
+
+  user User @relation(fields: [userId], references: [id])
+  college College @relation(fields: [collegeId], references: [id])
+
+  @@unique([userId, collegeId])
+}
